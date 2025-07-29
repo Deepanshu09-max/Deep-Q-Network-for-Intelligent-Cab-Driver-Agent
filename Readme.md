@@ -6,7 +6,7 @@
 
 > An intelligent cab driver agent that learns optimal profit maximization strategies using Deep Q-Network (DQN) in a simulated multi-city environment.
 
-![Taxi Driver Simulation Overview](Digrams/Taxi%20Driver%20Simulation%20Flowchart.png)
+![Tax### **Stage 1### **Stage 2: Add Rent & Action ### **Stage 3: Add Prioritized Buffer, Surge Prices due to Traffic, Zones:**asking:** Basic DQN:** Driver Simulation Overview**⭐ If you found this project helpful, please give it a star!**s/Taxi%20Driver%20Simulation%20Flowchart.png)
 
 ## **Table of Contents**
 
@@ -164,6 +164,9 @@ state = env.reset()
 └── 📝 README.md               # This file
 ```
 
+### 1. Introduction
+```
+
 ## **ABSTRACT**
 
 This project applies **deep reinforcement learning** to a simulated cab-driving environment, where an agent must make sequential decisions to maximize long-term profit. At each time step, the driver chooses among actions like accepting ride requests, idling, performing maintenance, renting out the cab for a fixed payout, or selling it altogether. These decisions yield immediate revenues or costs (e.g., fares, repairs, rental income) and affect future opportunities via changes in **location, time, vehicle condition**, and **availability of offers**.
@@ -172,9 +175,11 @@ Key enhancements include **prioritized experience replay**, which focuses learni
 
 **Author:** Deepanshu Saini
 
-### 1. Introduction
+```
 
-Real-world cab drivers must continuously make a series of intertwined decisions—whether to accept ride requests, wait for a better opportunity, perform maintenance when their vehicle breaks down, rent the car out for passive income, or even sell it at a favorable price. Each choice has both an immediate monetary consequence and a long-term impact on future earnings and vehicle availability. For example, driving farther to pick up a high-fare passenger may yield higher short-term revenue but increases wear and tear (and fueling costs), while deferring maintenance risks breakdowns that block all future income.
+## **Introduction**
+
+Real-world cab drivers must continuously make a series of intertwined decisions
 
 Traditional rule-based dispatching or simple heuristics struggle to capture this complex trade-off between immediate reward and future opportunity. **Reinforcement learning (RL)** provides a principled framework: by interacting with a simulated cab environment, an RL agent can learn from trial and error to maximize its cumulative, discounted profit over an effectively infinite horizon—discovering policies that balance short-term gains against long-term costs without hand-tuning.
 
@@ -182,13 +187,13 @@ In this project, we construct a **virtual cab world** as an infinite-horizon Mar
 
 ---
 
-## **2. MDP Formulation: CabDriver Environment**
+## **MDP Formulation: CabDriver Environment**
 
 We model the cab driver’s operational environment as a **finite state, finite action, episodic Markov Decision Process (MDP)**. The driver must decide what action to take at each time step to maximize cumulative future rewards. The MDP is formally defined as a 5-tuple:
 
-![RL Report\image.png](RL_Report\image.png)
+![RL Report MDP Formulation](RL_Report/image.png)
 
-### **2.1 State Space S :**
+### **State Space S:**
 
 Each state s∈S captures the current status of the cab, composed of the following components:
 
@@ -205,9 +210,9 @@ Each state s∈S captures the current status of the cab, composed of the followi
 
 To feed the state into the DQN, we one-hot encode categorical variables (location, hour, day), resulting in a state vector of size:
 
-![image.png](RL_Report\image%201.png)
+![State Vector Representation](RL_Report/image%201.png)
 
-### **2.2 Action Space A**
+### **Action Space A:**
 
 The agent chooses from the following **25 discrete actions** at each step:
 
@@ -227,7 +232,7 @@ At each state, only a subset of the 25 actions is **valid**. The agent uses an *
 - Exclude illegal actions from exploration and value maximization.
 - Prevent invalid transitions such as selling a damaged car or picking unavailable rides.
 
-### **2.3 Transition Function P(s′∣s,a)**
+### **Transition Function P(s′∣s,a):**
 
 The environment transitions to a new state s′ based on the current state s, action a, and stochastic events:
 
@@ -246,19 +251,19 @@ The environment transitions to a new state s′ based on the current state s, ac
 
 ---
 
-![image.png](RL_Report\image%202.png)
+![Reward Function Formula](RL_Report/image%202.png)
 
-### **2.5 Discount Factor γ**
+### **Discount Factor γ:**
 
 We use a discount factor γ= 0.99, giving high importance to future earnings while encouraging timely decisions like maintenance or ride acceptance.
 
 ---
 
-## **3. Environment Design**
+## **Environment Design**
 
 The environment simulates a **cab driver’s decision-making** in a dynamic, partially stochastic urban setting. It is structured as a **Markov Decision Process (MDP)** where the agent (cab driver) interacts with a changing world over time to maximize long-term profit.
 
-### 3.1. **State Space (𝑠 ∈ 𝑆)**
+### **State Space (𝑠 ∈ 𝑆):**
 
 The state captures all information the agent needs to make a decision. Each state is a tuple:
 
@@ -270,7 +275,7 @@ The state captures all information the agent needs to make a decision. Each stat
 - **Rental Offer:** Binary flag indicating if a fixed rental payout is currently available.
 - **Sale Offer:** Binary flag indicating if a fixed sale payout is available.
 
-### 3.2. **Action Space (𝑎 ∈ 𝐴(𝑠))**
+### **Action Space (𝑎 ∈ 𝐴(𝑠)):**
 
 The action set depends on the current state. Legal actions include:
 
@@ -285,14 +290,14 @@ To enforce realism and avoid undefined transitions, **action masking** is applie
 - Only actions that are contextually legal in the current state are allowed.
 - Illegal actions are masked out during learning and policy selection.
 
-### 3.3. **Transition Dynamics**
+### **Transition Dynamics:**
 
 - **Time Update:** Advancing time by one hour. If hour = 23, wrap to hour = 0 and increment day.
 - **Zone Movement:** If a ride is accepted, the cab moves to the destination zone.
 - **Condition Update:** After some actions (e.g., ride), the cab may **break down** with a small probability (e.g., 5%).
 - **Offer Updates:** Surge pricing and rental/sale offers appear and disappear **stochastically**, with fixed probabilities.
 
-### 3.4. **Reward Function (𝑟 = 𝑟(𝑠,𝑎))**
+### **Reward Function (𝑟 = 𝑟(𝑠,𝑎)):**
 
 The agent receives a reward signal after each action, shaped as:
 
@@ -306,12 +311,12 @@ The agent receives a reward signal after each action, shaped as:
 
 This encourages high-fare trips, time efficiency, and good condition management.
 
-### 3.5. **Episode Design**
+### **Episode Design:**
 
 - Episodes last **until the cab is sold/rented**, or for a **fixed number of steps** (e.g., 1000).
 - The environment is **non-episodic** in its economic model — it uses a **discounted infinite-horizon objective** with γ ≈ 0.99.
 
-### 3.6. **Stochastic Components**
+### **Stochastic Components:**
 
 - **Ride Request Generation:** Each zone has a Poisson-distributed number of ride requests, destination drawn from a fixed matrix.
 - **Surge Pricing:** Randomly toggled on/off based on demand probability.
@@ -320,7 +325,7 @@ This encourages high-fare trips, time efficiency, and good condition management.
 
 ---
 
-## 4. Algorithmic Choices
+## **Algorithmic Choices**
 
 In designing our solution, we selected the Deep Q‐Network (DQN) family of methods, augmented with several best‐practice enhancements, to balance stability, sample efficiency, and ease of implementation:
 
@@ -363,9 +368,9 @@ To learn an optimal cab-driving policy under the complex environment dynamics, w
 
 ---
 
-### **5. Methodology**
+## **Methodology**
 
-**5.1 Neural Network Architecture**
+### **Neural Network Architecture:**
 
 We model the Q-function Q(s,a;θ) using a **fully connected feedforward neural network**. The input is the encoded state vector, and the output is a vector of Q-values, one for each possible action.
 
@@ -392,7 +397,7 @@ We model the Q-function Q(s,a;θ) using a **fully connected feedforward neural n
 
 ---
 
-### **5.2 Training**
+### **Training:**
 
 To ensure stable and efficient training, we incorporate several standard and advanced reinforcement learning techniques:
 
@@ -420,14 +425,14 @@ To ensure stable and efficient training, we incorporate several standard and adv
 
 - We use the **Huber loss**, which is less sensitive to outliers than MSE:
 
-![image.png](RL_Report\image%203.png)
+![Huber Loss Formula](RL_Report/image%203.png)
 
 - Gradient clipping at a max norm of **10** is applied to prevent exploding gradients.
 - Optimizer: **Adam** with learning rate tuned empirically.
 
 ---
 
-### **5.3 Legal-Action Masking**
+### **Legal-Action Masking:**
 
 Not all actions are valid in every state. For example:
 
@@ -451,11 +456,11 @@ This **legal-action masking** significantly improves learning efficiency and sta
 
 ---
 
-## **6. Experiments & Results**
+## **Experiments & Results**
 
 To evaluate the effectiveness of our DQN-based approach in learning optimal cab-driving strategies, we conducted a series of structured experiments in increasing levels of environmental complexity. The training lasted for 10 **000 episodes** in each stage, with results reported through multiple metrics and plots.
 
-### **6.1 Hyperparameter Summary**
+### **Hyperparameter Summary:**
 
 We tuned a set of core hyperparameters that govern the learning dynamics:
 
@@ -507,13 +512,13 @@ We tuned a set of core hyperparameters that govern the learning dynamics:
   - Agent starts to incorporate longer-term planning, especially around cab condition.
 - **Plot:** Reward per episode shows improved convergence with reduced spikes.
 
-![image.png](RL_Report\image 4.png)
+![Training Results - Stage 2](RL_Report/image%204.png)
 
 ---
 
-![image.png](RL_Report\image%205.png)
+![Q-Value Convergence](RL_Report/image%205.png)
 
-![image.png](RL_Report\image%206.png)
+![Training Performance Metrics](RL_Report/image%206.png)
 
 ### **6.4 Stage 3: Add Prioritized Buffer , Surge Prices due to Traffic, Zones.**
 
@@ -548,9 +553,9 @@ We tuned a set of core hyperparameters that govern the learning dynamics:
 
 ---
 
-## **7. Analysis**
+## **Analysis**
 
-### **7.1 Learning Behavior**
+### **Learning Behavior:**
 
 Over the course of training, the DQN agent demonstrates a progressively refined driving policy. In the final setup, it consistently:
 
@@ -560,7 +565,7 @@ Over the course of training, the DQN agent demonstrates a progressively refined 
 
 These behaviors are emergent—not hard-coded—and reflect the agent's capacity to optimize long-term returns in a stochastic environment.
 
-### **7.2 Q‑Value Trends**
+### **Q‑Value Trends:**
 
 The estimated action-value function Q(s,a) stabilizes noticeably after approximately **4 000 episodes**:
 
@@ -568,7 +573,7 @@ The estimated action-value function Q(s,a) stabilizes noticeably after approxima
 - As ε decays and the target network begins to track more accurate values, **value estimates become smoother and more consistent**.
 - Visual tracking of Q-values for fixed sample states confirms convergence, with increasing separation between good and bad actions.
 
-### **7.3 Impact of Prioritized Experience Replay**
+### **Impact of Prioritized Experience Replay:**
 
 The use of **Prioritized Replay** leads to **faster convergence in early episodes** by allowing the agent to:
 
@@ -580,7 +585,7 @@ However, this comes with tradeoffs:
 - The **bias introduced by non-uniform sampling** must be counteracted by appropriate **importance-sampling (IS) weights**, especially as β is annealed.
 - **α (priority exponent)** and **β (IS correction)** need to be carefully tuned to balance speed and stability. Over-prioritization can cause instability by overfitting high-error samples.
 
-### **7.4 Limitations**
+### **Limitations:**
 
 While the results are promising, our approach operates within a set of simplifying assumptions:
 
@@ -591,7 +596,7 @@ While the results are promising, our approach operates within a set of simplifyi
 
 ---
 
-## **8. Conclusion**
+## **Conclusion**
 
 In this project, we successfully applied **Deep Q‑Learning** to train a cab driver agent in a simulated urban environment modeled as a **high-dimensional, infinite-horizon Markov Decision Process (MDP)**. The task involved maximizing long-term profit by learning when and where to drive, wait, rent, or retire the cab amidst dynamic passenger demand, zone-based surge pricing, and cab degradation.
 
