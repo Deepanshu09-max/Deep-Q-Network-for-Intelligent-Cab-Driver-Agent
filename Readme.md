@@ -5,73 +5,73 @@
 1. **Abstract**
 2. **Introduction**
 3. **MDP Formulation: CabDriver Environment**
-    
-    3.1. State Space
-    
-    3.2. Action Space
-    
-    3.3. Transition Function
-    
-    3.4. Reward Function
-    
-    3.5. Discount Factor
-    
+
+   3.1. State Space
+
+   3.2. Action Space
+
+   3.3. Transition Function
+
+   3.4. Reward Function
+
+   3.5. Discount Factor
+
 4. **Environment Design**
-    
-    4.1. State Space (𝑠 ∈ 𝑆)
-    
-    4.2. Action Space (𝑎 ∈ 𝐴(𝑠))
-    
-    4.3. Transition Dynamics
-    
-    4.4. Reward Function (𝑟=𝑟(𝑠,𝑎))
-    
-    4.5. Episode Design
-    
-    4.6. Stochastic Components
-    
+
+   4.1. State Space (𝑠 ∈ 𝑆)
+
+   4.2. Action Space (𝑎 ∈ 𝐴(𝑠))
+
+   4.3. Transition Dynamics
+
+   4.4. Reward Function (𝑟=𝑟(𝑠,𝑎))
+
+   4.5. Episode Design
+
+   4.6. Stochastic Components
+
 5. **Algorithmic Choices**
-    
-    5.1. Q-Learning with Function Approximation
-    
-    5.2. Target Network
-    
-    5.3. Experience Replay
-    
-    5.4. ε-Greedy Exploration
-    
-    5.5. Prioritized Experience Replay
-    
-    5.6. Huber Loss & Gradient Clipping
-    
+
+   5.1. Q-Learning with Function Approximation
+
+   5.2. Target Network
+
+   5.3. Experience Replay
+
+   5.4. ε-Greedy Exploration
+
+   5.5. Prioritized Experience Replay
+
+   5.6. Huber Loss & Gradient Clipping
+
 6. **Methodology**
-    
-    6.1. Neural Network Architecture
-    
-    6.2. Training Details
-    
-    6.3. Legal-Action Masking
-    
+
+   6.1. Neural Network Architecture
+
+   6.2. Training Details
+
+   6.3. Legal-Action Masking
+
 7. **Experiments & Results**
-    
-    7.1. Hyperparameter Summary
-    
-    7.2. Stage 1: Basic DQN
-    
-    7.3. Stage 2: Rent & Action Masking
-    
-    7.4. Stage 3: Surge Pricing, Zone Multipliers & Prioritized Replay
-    
+
+   7.1. Hyperparameter Summary
+
+   7.2. Stage 1: Basic DQN
+
+   7.3. Stage 2: Rent & Action Masking
+
+   7.4. Stage 3: Surge Pricing, Zone Multipliers & Prioritized Replay
+
 8. **Analysis**
-    
-    8.1. Learning Behavior
-    
-    8.2. Q-Value Trends
-    
-    8.3. Impact of Prioritized Experience Replay
-    
-    8.4. Limitations
-    
+
+   8.1. Learning Behavior
+
+   8.2. Q-Value Trends
+
+   8.3. Impact of Prioritized Experience Replay
+
+   8.4. Limitations
+
 9. **Conclusion**
 
 ## **ABSTRACT**
@@ -84,11 +84,11 @@ Key enhancements include **prioritized experience replay**, which focuses learni
 
 ### 1. Introduction
 
-Real-world cab drivers must continuously make a series of intertwined decisions—whether to accept ride requests, wait for a better opportunity, perform maintenance when their vehicle breaks down, rent the car out for passive income, or even sell it at a favorable price.  Each choice has both an immediate monetary consequence and a long-term impact on future earnings and vehicle availability.  For example, driving farther to pick up a high-fare passenger may yield higher short-term revenue but increases wear and tear (and fueling costs), while deferring maintenance risks breakdowns that block all future income.
+Real-world cab drivers must continuously make a series of intertwined decisions—whether to accept ride requests, wait for a better opportunity, perform maintenance when their vehicle breaks down, rent the car out for passive income, or even sell it at a favorable price. Each choice has both an immediate monetary consequence and a long-term impact on future earnings and vehicle availability. For example, driving farther to pick up a high-fare passenger may yield higher short-term revenue but increases wear and tear (and fueling costs), while deferring maintenance risks breakdowns that block all future income.
 
-Traditional rule-based dispatching or simple heuristics struggle to capture this complex trade-off between immediate reward and future opportunity.  **Reinforcement learning (RL)** provides a principled framework: by interacting with a simulated cab environment, an RL agent can learn from trial and error to maximize its cumulative, discounted profit over an effectively infinite horizon—discovering policies that balance short-term gains against long-term costs without hand-tuning.
+Traditional rule-based dispatching or simple heuristics struggle to capture this complex trade-off between immediate reward and future opportunity. **Reinforcement learning (RL)** provides a principled framework: by interacting with a simulated cab environment, an RL agent can learn from trial and error to maximize its cumulative, discounted profit over an effectively infinite horizon—discovering policies that balance short-term gains against long-term costs without hand-tuning.
 
-In this project, we construct a **virtual cab world** as an infinite-horizon Markov decision process (MDP), with discrete state components for current zone, time of day, day of week, vehicle condition, and pending sell offers.  We start with a basic DQN agent that learns to drive and sell, then progressively enrich our model by adding maintenance, lump-sum car rentals, prioritized experience replay, and dynamic surge and zone-based multipliers.
+In this project, we construct a **virtual cab world** as an infinite-horizon Markov decision process (MDP), with discrete state components for current zone, time of day, day of week, vehicle condition, and pending sell offers. We start with a basic DQN agent that learns to drive and sell, then progressively enrich our model by adding maintenance, lump-sum car rentals, prioritized experience replay, and dynamic surge and zone-based multipliers.
 
 ---
 
@@ -96,39 +96,39 @@ In this project, we construct a **virtual cab world** as an infinite-horizon Mar
 
 We model the cab driver’s operational environment as a **finite state, finite action, episodic Markov Decision Process (MDP)**. The driver must decide what action to take at each time step to maximize cumulative future rewards. The MDP is formally defined as a 5-tuple:
 
-![image.png](image.png)
+![image.png](RL Report\image.png)
 
 ### **2.1 State Space S :**
 
-Each state s∈S  captures the current status of the cab, composed of the following components:
+Each state s∈S captures the current status of the cab, composed of the following components:
 
-| Component | Type | Values | Description |
-| --- | --- | --- | --- |
-| **Location** | Discrete | 0 to 4 (5 zones) | Zone where the cab is currently located. |
-| **Hour** | Discrete | 0 to 23 | Hour of the day. |
-| **Day** | Discrete | 0 to 6 | Day of the week. |
-| **Condition** | Binary | 0 (ok), 1 (damaged) | Whether the cab is in working condition. |
-| **Sell Flag** | Binary | 0, 1 | Indicates whether a sell offer is available. |
-| **Surge Flag** | Binary | 0, 1 | Indicates whether surge pricing is active. |
+| Component      | Type     | Values              | Description                                  |
+| -------------- | -------- | ------------------- | -------------------------------------------- |
+| **Location**   | Discrete | 0 to 4 (5 zones)    | Zone where the cab is currently located.     |
+| **Hour**       | Discrete | 0 to 23             | Hour of the day.                             |
+| **Day**        | Discrete | 0 to 6              | Day of the week.                             |
+| **Condition**  | Binary   | 0 (ok), 1 (damaged) | Whether the cab is in working condition.     |
+| **Sell Flag**  | Binary   | 0, 1                | Indicates whether a sell offer is available. |
+| **Surge Flag** | Binary   | 0, 1                | Indicates whether surge pricing is active.   |
 
 ### ➤ **State Vector Representation**
 
 To feed the state into the DQN, we one-hot encode categorical variables (location, hour, day), resulting in a state vector of size:
 
-![image.png](image%201.png)
+![image.png](RL Report\image%201.png)
 
 ### **2.2 Action Space A**
 
 The agent chooses from the following **25 discrete actions** at each step:
 
 - **Operational Actions:**
-    - **Idle (0):** Do nothing for one hour.
-    - **Maintain (1):** Repair the cab if it's damaged.
-    - **Sell (2):** Accept an external buyout offer (only valid when offer=1 and condition=ok).
-    - **Rent (3):** Rent out the cab (only valid when condition=damaged).
+  - **Idle (0):** Do nothing for one hour.
+  - **Maintain (1):** Repair the cab if it's damaged.
+  - **Sell (2):** Accept an external buyout offer (only valid when offer=1 and condition=ok).
+  - **Rent (3):** Rent out the cab (only valid when condition=damaged).
 - **Rides (4–23):** Choose from all valid **(pickup, drop)** zone pairs where pickup ≠ drop.
-    - 5 pickup zones × 4 valid drop zones = 20 ride actions.
-    - Availability determined dynamically based on zone-specific Poisson distribution.
+  - 5 pickup zones × 4 valid drop zones = 20 ride actions.
+  - Availability determined dynamically based on zone-specific Poisson distribution.
 
 ### ➤ **Legal Action Masking**
 
@@ -142,21 +142,21 @@ At each state, only a subset of the 25 actions is **valid**. The agent uses an *
 The environment transitions to a new state s′ based on the current state s, action a, and stochastic events:
 
 - **Time Progression:**
-    - Time and day are updated based on the action’s duration (idle = 1 hr, ride = ride_time, etc.).
-    - Wrapping across 24-hour and 7-day cycles is handled.
+  - Time and day are updated based on the action’s duration (idle = 1 hr, ride = ride_time, etc.).
+  - Wrapping across 24-hour and 7-day cycles is handled.
 - **Ride Availability:**
-    - Ride requests follow a Poisson process with zone-specific means.
+  - Ride requests follow a Poisson process with zone-specific means.
 - **Condition Update:**
-    - Cabs degrade probabilistically after each ride or action.
-    - Maintenance restores condition.
+  - Cabs degrade probabilistically after each ride or action.
+  - Maintenance restores condition.
 - **Sell & Rent:**
-    - These are **terminal actions**, ending the episode immediately.
+  - These are **terminal actions**, ending the episode immediately.
 - **Surge & Offers:**
-    - These flags are updated stochastically at each step.
+  - These flags are updated stochastically at each step.
 
 ---
 
-![image.png](image%202.png)
+![image.png](RL Report\image%202.png)
 
 ### **2.5 Discount Factor γ**
 
@@ -207,8 +207,8 @@ To enforce realism and avoid undefined transitions, **action masking** is applie
 The agent receives a reward signal after each action, shaped as:
 
 - **Ride:** +fare – cost
-    - Fare = base fare × zone multiplier × (1 + surge)
-    - Cost = fuel, wear-and-tear (fixed or zone-based)
+  - Fare = base fare × zone multiplier × (1 + surge)
+  - Cost = fuel, wear-and-tear (fixed or zone-based)
 - **Idle:** small negative reward (e.g., –1) for wasted time.
 - **Repair:** –repair cost (e.g., –100 units).
 - **Rent:** +rental reward (e.g., +250 units), ends episode.
@@ -235,34 +235,32 @@ This encourages high-fare trips, time efficiency, and good condition management.
 In designing our solution, we selected the Deep Q‐Network (DQN) family of methods, augmented with several best‐practice enhancements, to balance stability, sample efficiency, and ease of implementation:
 
 1. **Q-Learning with Function Approximation**
-    
-    We approximate the action-value function Q(s,a) with a small feed-forward neural network (two hidden layers of 64 ReLU units).  
-    
+
+   We approximate the action-value function Q(s,a) with a small feed-forward neural network (two hidden layers of 64 ReLU units).
+
 2. **Target Network**
-    
-    To stabilize bootstrapped updates, we maintain two networks:
-    
-    - **Online (behavior) network** Qθ for action selection and parameter updates
-    - **Target network** Qθ−Q, whose weights are periodically synced from Qθ every 2 000 training steps
-        
-        This decouples the rapidly changing target values from the gradient updates, reducing harmful feedback loops.
-        
+
+   To stabilize bootstrapped updates, we maintain two networks:
+
+   - **Online (behavior) network** Qθ for action selection and parameter updates
+   - **Target network** Qθ−Q, whose weights are periodically synced from Qθ every 2 000 training steps
+     This decouples the rapidly changing target values from the gradient updates, reducing harmful feedback loops.
+
 3. **Experience Replay**
-    
-    We store transitions (s,a,r,s′,done,legal) in a circular buffer of size 10 000 and sample mini-batches (size 64) uniformly.  This breaks temporal correlations and reuses past experiences, improving data efficiency.
-    
+
+   We store transitions (s,a,r,s′,done,legal) in a circular buffer of size 10 000 and sample mini-batches (size 64) uniformly. This breaks temporal correlations and reuses past experiences, improving data efficiency.
+
 4. **ε-Greedy Exploration with Annealing**
-    
-    We employ an ε-greedy policy, starting with ε = 1.0 and linearly decaying to ε = 0.05 over the first ~10 000 steps.  This schedule encourages broad exploration early on, then gradually shifts to exploitation as the agent’s Q-estimates become more accurate.
-    
+
+   We employ an ε-greedy policy, starting with ε = 1.0 and linearly decaying to ε = 0.05 over the first ~10 000 steps. This schedule encourages broad exploration early on, then gradually shifts to exploitation as the agent’s Q-estimates become more accurate.
+
 5. **Prioritized Replay (Optional Extension)**
-    
-    In later experiments, we replace uniform replay with **prioritized experience replay**, sampling transitions in proportion to their current temporal-difference (TD) errors.  This focuses learning on surprising or under-learned experiences, speeding convergence.
-    
+
+   In later experiments, we replace uniform replay with **prioritized experience replay**, sampling transitions in proportion to their current temporal-difference (TD) errors. This focuses learning on surprising or under-learned experiences, speeding convergence.
+
 6. **Huber Loss and Gradient Clipping**
-    
-    We optimize with the Huber (smooth‐L1) loss to mitigate sensitivity to outliers in large TD errors, and clip gradients at norm 10 to prevent unstable, runaway updates.
-    
+
+   We optimize with the Huber (smooth‐L1) loss to mitigate sensitivity to outliers in large TD errors, and clip gradients at norm 10 to prevent unstable, runaway updates.
 
 **Why DQN?**
 
@@ -283,12 +281,12 @@ We model the Q-function Q(s,a;θ)using a **fully connected feedforward neural ne
 
 ### **Network Layers:**
 
-| Layer | Details |
-| --- | --- |
-| **Input Layer** | Size = 39 (state vector) |
-| **Hidden Layer 1** | 64 units, ReLU activation |
-| **Hidden Layer 2** | 64 units, ReLU activation |
-| **Output Layer** | Size = 25 (one for each discrete action); linear activation |
+| Layer              | Details                                                     |
+| ------------------ | ----------------------------------------------------------- |
+| **Input Layer**    | Size = 39 (state vector)                                    |
+| **Hidden Layer 1** | 64 units, ReLU activation                                   |
+| **Hidden Layer 2** | 64 units, ReLU activation                                   |
+| **Output Layer**   | Size = 25 (one for each discrete action); linear activation |
 
 ### **Block Diagram:**
 
@@ -328,7 +326,7 @@ To ensure stable and efficient training, we incorporate several standard and adv
 
 - We use the **Huber loss**, which is less sensitive to outliers than MSE:
 
-![image.png](image%203.png)
+![image.png](RL Report\image%203.png)
 
 - Gradient clipping at a max norm of **10** is applied to prevent exploding gradients.
 - Optimizer: **Adam** with learning rate tuned empirically.
@@ -367,22 +365,22 @@ To evaluate the effectiveness of our DQN-based approach in learning optimal cab-
 
 We tuned a set of core hyperparameters that govern the learning dynamics:
 
-| **Parameter** | **Value** |
-| --- | --- |
-| Discount factor γ\gamma | 0.99 |
-| Learning rate (initial) | 5×10^-7 |
-| Batch size | 256 |
-| Replay buffer size | 10 000 |
-| Target network update | Every 5 000 steps |
-| Epsilon decay rate | 1×10^−4 |
+| **Parameter**             | **Value**         |
+| ------------------------- | ----------------- |
+| Discount factor γ\gamma   | 0.99              |
+| Learning rate (initial)   | 5×10^-7           |
+| Batch size                | 256               |
+| Replay buffer size        | 10 000            |
+| Target network update     | Every 5 000 steps |
+| Epsilon decay rate        | 1×10^−4           |
 | Prioritized Replay (α, β) | 0.2, β: 0.4 → 1.0 |
 
 ### **6.2 Stage 1: Basic DQN**
 
 - **Setup:** The environment is simplified:
-    - No rental option.
-    - Uniform pricing.
-    - Standard experience replay buffer.
+  - No rental option.
+  - Uniform pricing.
+  - Standard experience replay buffer.
 
 **Observations:**
 
@@ -393,60 +391,59 @@ We tuned a set of core hyperparameters that govern the learning dynamics:
 ### **6.3 Stage 2: Add Rent & Action Masking**
 
 - **Enhancements:**
-    - Introduced **Rent** as a terminal action when the cab is damaged.
-    - **Action masking** applied to enforce legality.
+  - Introduced **Rent** as a terminal action when the cab is damaged.
+  - **Action masking** applied to enforce legality.
 - **Infinite-horizon sale/maintenance parameters :**
-    
-    SELL_PRICE = 80      
-    OFFER_PROB = 0.4       
-    DETERIORATION_PROB = 0.1   
-    REPAIR_PROB = 0.5       
-    MAINTENANCE_COST = 50      
-    RENT_PER_STEP   = 6     
-    
-    GAMMA=0.99
-    RENT_LUMP_SUM   = RENT_PER_STEP / (1.0 - GAMMA)  
-    
+
+  SELL_PRICE = 80  
+   OFFER_PROB = 0.4  
+   DETERIORATION_PROB = 0.1  
+   REPAIR_PROB = 0.5  
+   MAINTENANCE_COST = 50  
+   RENT_PER_STEP = 6
+
+  GAMMA=0.99
+  RENT_LUMP_SUM = RENT_PER_STEP / (1.0 - GAMMA)
 
 - **Outcome:**
-    - The agent learns to **rent the cab when it's no longer operational**, avoiding negative rewards from operating in damaged condition.
-    - Reward curve becomes smoother and reaches a stable average of **~450**.
+  - The agent learns to **rent the cab when it's no longer operational**, avoiding negative rewards from operating in damaged condition.
+  - Reward curve becomes smoother and reaches a stable average of **~450**.
 - **Insight:**
-    - Legal action masking is critical to avoid learning instability from invalid Q-values.
-    - Agent starts to incorporate longer-term planning, especially around cab condition.
+  - Legal action masking is critical to avoid learning instability from invalid Q-values.
+  - Agent starts to incorporate longer-term planning, especially around cab condition.
 - **Plot:** Reward per episode shows improved convergence with reduced spikes.
 
-![image.png](image%204.png)
+![image.png](RL Report\image 4.png)
 
 ---
 
-![image.png](image%205.png)
+![image.png](RL Report\image%205.png)
 
-![image.png](image%206.png)
+![image.png](RL Report\image%206.png)
 
 ### **6.4 Stage 3: Add Prioritized Buffer , Surge Prices due to Traffic, Zones.**
 
 - **Final configuration:**
-    - **Surge pricing** due to Traffic condition at different Zones for specific hour of the day are added where rewards are multiplied and **zone multipliers** added to encourage route optimization.
-    - **Prioritized replay** improves sample efficiency.
-    - Terminal actions (rent, sell) fully functional.
-    - All components (reward shaping, demand stochasticity, pricing) integrated.
+  - **Surge pricing** due to Traffic condition at different Zones for specific hour of the day are added where rewards are multiplied and **zone multipliers** added to encourage route optimization.
+  - **Prioritized replay** improves sample efficiency.
+  - Terminal actions (rent, sell) fully functional.
+  - All components (reward shaping, demand stochasticity, pricing) integrated.
 - **Key Results:**
-    - Agent achieves fluctuating rewards with high TD-Errors.
-    - Learning behavior will  reflect:
-        - Selecting high-paying routes.
-        - Opting for surge/demand-heavy areas.
-        - Timely repair and rent/sell decisions based on cab health.
+  - Agent achieves fluctuating rewards with high TD-Errors.
+  - Learning behavior will reflect:
+    - Selecting high-paying routes.
+    - Opting for surge/demand-heavy areas.
+    - Timely repair and rent/sell decisions based on cab health.
 
 ---
 
 ### **Summary of Learning Progress**
 
-| **Stage** | **Features Added** | **Avg. Reward** | **Key Takeaway** |
-| --- | --- | --- | --- |
-| **Stage 1** | Basic DQN only | ~300 | Learns basic ride mechanics |
-| **Stage 2** | Rent + Legal Action Masking | ~650 | Learns repair-aware strategies. Gives agent a choice to exit environment at any time. |
-| **Stage 3** | Surge, Zones, Prioritized Replay | Highly Fluctutalting(working on Convergence) | Full policy: surge riding, selling, renting |
+| **Stage**   | **Features Added**               | **Avg. Reward**                              | **Key Takeaway**                                                                      |
+| ----------- | -------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------- |
+| **Stage 1** | Basic DQN only                   | ~300                                         | Learns basic ride mechanics                                                           |
+| **Stage 2** | Rent + Legal Action Masking      | ~650                                         | Learns repair-aware strategies. Gives agent a choice to exit environment at any time. |
+| **Stage 3** | Surge, Zones, Prioritized Replay | Highly Fluctutalting(working on Convergence) | Full policy: surge riding, selling, renting                                           |
 
 ---
 
