@@ -93,8 +93,9 @@ This project applies **deep reinforcement learning** to a simulated cab-driving 
 Key enhancements include **prioritized experience replay**, which focuses learning on high-impact transitions, and domain features such as **surge pricing** in busy zones and **zone-based fare multipliers**. After training for 5,000 episodes, the agent converges to a policy that effectively manages trade-offs between immediate gain and future risk, achieving steady improvements in reward per episode (from ~300 to >650). The results confirm the agent's ability to exploit profitable opportunities and make sensible long-term decisions under uncertainty.
 
 ### **🎯 Key Achievements:**
+
 - **17% net profit increase** over baseline DQN implementation
-- **18% improvement** in average return-per-episode 
+- **18% improvement** in average return-per-episode
 - Successful convergence after **5,000 training episodes**
 - Advanced DQN with **prioritized experience replay** and **legal action masking**
 
@@ -105,6 +106,7 @@ Key enhancements include **prioritized experience replay**, which focuses learni
 ## **Quick Start**
 
 ### **Prerequisites**
+
 ```bash
 Python 3.8+
 TensorFlow 2.x
@@ -113,6 +115,7 @@ Jupyter Notebook
 ```
 
 ### **Installation & Usage**
+
 ```bash
 # Clone the repository
 git clone https://github.com/Deepanshu09-max/Deep-Q-Network-for-Intelligent-Cab-Driver-Agent.git
@@ -126,6 +129,7 @@ jupyter notebook rlproject.ipynb
 ```
 
 ### **Quick Demo**
+
 ```python
 # Load pre-trained model and test
 from Env import CabDriver
@@ -143,6 +147,7 @@ state = env.reset()
 ---
 
 ## **Project Structure**
+
 ```
 📦 Deep-Q-Network-for-Intelligent-Cab-Driver-Agent/
 ├── 📊 rlproject.ipynb          # Main training notebook
@@ -173,8 +178,8 @@ state = env.reset()
 2. **[Introduction](#introduction)**
 3. **[Quick Start](#quick-start)**
 4. **[Project Structure](#project-structure)**
-4. **[Project Structure](#project-structure)**
-5. **[MDP Formulation: CabDriver Environment](#mdp-formulation)**
+5. **[Project Structure](#project-structure)**
+6. **[MDP Formulation: CabDriver Environment](#mdp-formulation)**
 
    5.1. State Space
 
@@ -186,7 +191,7 @@ state = env.reset()
 
    5.5. Discount Factor
 
-6. **[Environment Design](#environment-design)**
+7. **[Environment Design](#environment-design)**
 
    6.1. State Space (𝑠 ∈ 𝑆)
 
@@ -200,7 +205,7 @@ state = env.reset()
 
    6.6. Stochastic Components
 
-7. **[Algorithmic Choices](#algorithmic-choices)**
+8. **[Algorithmic Choices](#algorithmic-choices)**
 
    7.1. Q-Learning with Function Approximation
 
@@ -214,7 +219,7 @@ state = env.reset()
 
    7.6. Huber Loss & Gradient Clipping
 
-8. **[Methodology](#methodology)**
+9. **[Methodology](#methodology)**
 
    8.1. Neural Network Architecture
 
@@ -222,17 +227,17 @@ state = env.reset()
 
    8.3. Legal-Action Masking
 
-9. **[Experiments & Results](#experiments--results)**
+10. **[Experiments & Results](#experiments--results)**
 
-   9.1. Hyperparameter Summary
+    9.1. Hyperparameter Summary
 
-   9.2. Stage 1: Basic DQN
+    9.2. Stage 1: Basic DQN
 
-   9.3. Stage 2: Rent & Action Masking
+    9.3. Stage 2: Rent & Action Masking
 
-   9.4. Stage 3: Surge Pricing, Zone Multipliers & Prioritized Replay
+    9.4. Stage 3: Surge Pricing, Zone Multipliers & Prioritized Replay
 
-10. **[Analysis](#analysis)**
+11. **[Analysis](#analysis)**
 
     10.1. Learning Behavior
 
@@ -242,7 +247,7 @@ state = env.reset()
 
     10.4. Limitations
 
-11. **[Conclusion](#conclusion)**
+12. **[Conclusion](#conclusion)**
 
 ---
 
@@ -615,10 +620,10 @@ We tuned a set of core hyperparameters that govern the learning dynamics:
 
 ### **Summary of Learning Progress**
 
-| **Stage**   | **Features Added**               | **Avg. Reward**                              | **Key Takeaway**                                                                      |
-| ----------- | -------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------- |
-| **Stage 1** | Basic DQN only                   | ~300                                         | Learns basic ride mechanics                                                           |
-| **Stage 2** | Rent + Legal Action Masking      | ~650                                         | Learns repair-aware strategies. Gives agent a choice to exit environment at any time. |
+| **Stage**   | **Features Added**               | **Avg. Reward**                           | **Key Takeaway**                                                                      |
+| ----------- | -------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------- |
+| **Stage 1** | Basic DQN only                   | ~300                                      | Learns basic ride mechanics                                                           |
+| **Stage 2** | Rent + Legal Action Masking      | ~650                                      | Learns repair-aware strategies. Gives agent a choice to exit environment at any time. |
 | **Stage 3** | Surge, Zones, Prioritized Replay | High fluctuation (working on convergence) | Full policy: surge riding, selling, renting                                           |
 
 ### **📊 Key Performance Metrics**
@@ -703,6 +708,7 @@ This project demonstrates the effectiveness of modern deep RL techniques in comp
 ### **🤝 Contributing**
 
 Contributions are welcome! Please feel free to submit a Pull Request or open an Issue for:
+
 - Algorithm improvements
 - Environment enhancements
 - Performance optimizations
@@ -722,6 +728,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **⭐ If you found this project helpful, please give it a star!**
+
 - **Prioritized Experience Replay** accelerated convergence by focusing updates on transitions with high learning potential.
 - **Target Network** updates stabilized Q-value estimates and reduced oscillations during training.
 
