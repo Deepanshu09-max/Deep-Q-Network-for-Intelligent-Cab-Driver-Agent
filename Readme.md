@@ -633,19 +633,6 @@ Contributions are welcome! Please feel free to submit a Pull Request or open an 
 - Performance optimizations
 - Documentation updates
 
-### **📄 License**
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-### **📞 Contact**
-
-**Author:** Deepanshu Saini  
-**Email:** [Your Email]  
-**LinkedIn:** [Your LinkedIn Profile]  
-**GitHub:** [@Deepanshu09-max](https://github.com/Deepanshu09-max)
-
----
-
 **⭐ If you found this project helpful, please give it a star!**
 
 - **Prioritized Experience Replay** accelerated convergence by focusing updates on transitions with high learning potential.
